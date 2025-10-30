@@ -13,13 +13,15 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Success from "./Pages/order/Success";
 import AllProduct from "./Pages/allProduct/allProduct";
+import CheckoutSuccess from "./Pages/order/CheckoutSuccess";
 
 function App() {
   return (
     <MyState>
       <Routes>
+        <Route path="/checkout-success" element={<CheckoutSuccess />} />
         <Route path="/success" element={<Success />} />
-        <Route path="allProducts" element={<AllProduct/>}/>
+        <Route path="allProducts" element={<AllProduct />} />
         <Route path="/" element={<Home />} />
         <Route path="/order" element={<Order />} />
         <Route path="/cart" element={<Cart />} />

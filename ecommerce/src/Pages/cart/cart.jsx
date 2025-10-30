@@ -34,48 +34,55 @@ function Cart() {
     localStorage.setItem("cart", JSON.stringify(cartItems));
   }, [cartItems]);
 
-
   const makePayment = async () => {
     try {
-      const stripe = await loadStripe("pk_test_51SN9PSCZJwMTyX7BaMarCo6MsthQtTYUNEUPgmySpgXLjlUEYpWpqGhWJS9yKkXN5n4wrt87V9yTy4BrxFk15z8x00W01Bf984"); 
+      const stripe = await loadStripe(
+        "pk_test_51SN9PSCZJwMTyX7BaMarCo6MsthQtTYUNEUPgmySpgXLjlUEYpWpqGhWJS9yKkXN5n4wrt87V9yTy4BrxFk15z8x00W01Bf984"
+      );
 
       const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.email) {
-      console.warn("⚠️ No user found in localStorage, proceeding as guest.");
+      if (!user || !user.email) {
+        console.warn("⚠️ No user found in localStorage, proceeding as guest.");
+      }
+
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error("Your cart is empty.");
+      }
+
+      const response = await fetch(
+        "http://localhost:7000/api/create-checkout-session",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            products: cartItems,
+            user: {
+              email: user?.email || "guest@example.com",
+              name: user?.name || "Guest", // ✅ send name to backend
+            },
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to create checkout session");
+      }
+
+      if (!data.url) {
+        throw new Error("Checkout session URL missing from server response.");
+      }
+
+      localStorage.setItem("paymentSessionId", data.id);
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+
+      window.location.href = data.url;
+    } catch (error) {
+      console.error("❌ Payment error:", error.message);
+      alert(`Payment failed: ${error.message}`);
     }
-
-    if (!cartItems || cartItems.length === 0) {
-      throw new Error("Your cart is empty.");
-    }
-
-    const response = await fetch("http://localhost:7000/api/create-checkout-session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        products: cartItems,
-        user: user || { email: "guest" },
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Failed to create checkout session");
-    }
-
-    if (!data.url) {
-      throw new Error("Checkout session URL missing from server response.");
-    }
-
-    localStorage.setItem("paymentSessionId", data.id);
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
-
-    window.location.href = data.url;
-  } catch (error) {
-    console.error("❌ Payment error:", error.message);
-    alert(`Payment failed: ${error.message}`);
-  }
-};
+  };
 
   return (
     <Layout>

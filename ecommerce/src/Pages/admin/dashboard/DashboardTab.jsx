@@ -5,10 +5,12 @@ import { FaUser, FaCartPlus } from "react-icons/fa";
 import { AiFillShopping, AiFillPlusCircle, AiFillDelete } from "react-icons/ai";
 import myContext from "../../../Context/context";
 import { Link } from "react-router-dom";
+import { collection, getDocs } from "firebase/firestore";
+import { fireDB } from "../../../Firebase/Firebase";
 
 function DashboardTab() {
   const context = useContext(myContext);
-  const { mode, product, edithandle, deleteProduct, user, order,loading } = context;
+  const { mode, product, edithandle, deleteProduct, user, loading } = context;
   let [isOpen, setIsOpen] = useState(false);
 
   function closeModal() {
@@ -22,6 +24,27 @@ function DashboardTab() {
   const goToAdd = () => {
     window.location.href = "/addProduct";
   };
+
+  const [orders, setOrders] = useState([]); // ✅ define state
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const snapshot = await getDocs(collection(fireDB, "orders"));
+        const ordersList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setOrders(ordersList);
+      } catch (error) {
+        console.error("🔥 Error fetching orders:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   return (
     <div>
@@ -40,7 +63,7 @@ function DashboardTab() {
                   </div>{" "}
                 </button>
               </Tab>
-              {/* <Tab>
+              <Tab>
                 <button
                   type="button"
                   className="font-medium border-b-2 border-pink-500 bg-[#605d5d12] text-pink-500  hover:shadow-pink-700  rounded-lg text-xl shadow-[inset_0_0_8px_rgba(0,0,0,0.6)]    px-5 py-1.5 text-center "
@@ -49,7 +72,7 @@ function DashboardTab() {
                     <AiFillShopping /> Order
                   </div>
                 </button>
-              </Tab> */}
+              </Tab>
               <Tab>
                 <button
                   type="button"
@@ -210,7 +233,7 @@ function DashboardTab() {
                                     </div>
                                     <div>
                                       <Link
-                                        to={"/updateproduct"}
+                                        to={"/updateProduct"}
                                         onClick={edithandle(item)}
                                       >
                                         <svg
@@ -240,7 +263,7 @@ function DashboardTab() {
                 </div>
               </div>
             </TabPanel>
-            {/* order 
+            {/* order  */}
             <TabPanel>
               <div className="relative overflow-x-auto mb-16">
                 <h1
@@ -252,13 +275,13 @@ function DashboardTab() {
 
                 {loading ? (
                   <p className="text-center">Loading...</p>
-                ) : order.length === 0 ? (
+                ) : orders.length === 0 ? (
                   <p className="text-center text-gray-500">No orders found.</p>
                 ) : (
-                  order.map((allorder) => (
+                  orders.map((orderDoc) => (
                     <table
-                      key={allorder.id}
-                      className="w-full text-sm text-left text-gray-500 dark:text-gray-400"
+                      key={orderDoc.id}
+                      className="w-full text-sm text-left text-gray-500 dark:text-gray-400 mb-8"
                     >
                       <thead
                         className="text-xs text-black uppercase bg-gray-200 "
@@ -274,7 +297,7 @@ function DashboardTab() {
                           <th className="px-6 py-3">Image</th>
                           <th className="px-6 py-3">Title</th>
                           <th className="px-6 py-3">Price</th>
-                          <th className="px-6 py-3">Category</th>
+                          <th className="px-6 py-3">Quantity</th>
                           <th className="px-6 py-3">Name</th>
                           <th className="px-6 py-3">Address</th>
                           <th className="px-6 py-3">Pincode</th>
@@ -284,9 +307,10 @@ function DashboardTab() {
                         </tr>
                       </thead>
 
-                      {allorder.cartItems.map((item, index) => (
-                        <tbody key={index}>
+                      <tbody>
+                        {orderDoc.products.map((item, index) => (
                           <tr
+                            key={index}
                             className="bg-gray-50 border-b dark:border-gray-700"
                             style={{
                               backgroundColor:
@@ -295,7 +319,7 @@ function DashboardTab() {
                             }}
                           >
                             <td className="px-6 py-4">{index + 1}</td>
-                            <td className="px-6 py-4">{allorder.paymentId}</td>
+                            <td className="px-6 py-4">{orderDoc.sessionId}</td>
                             <td className="px-6 py-4">
                               <img
                                 className="w-16"
@@ -305,30 +329,37 @@ function DashboardTab() {
                             </td>
                             <td className="px-6 py-4">{item.title}</td>
                             <td className="px-6 py-4">${item.price}</td>
-                            <td className="px-6 py-4">{item.category}</td>
+                            <td className="px-6 py-4">{item.quantity}</td>
                             <td className="px-6 py-4">
-                              {allorder.addressInfo.name}
+                              {orderDoc.addressInfo?.name || "-"}
                             </td>
                             <td className="px-6 py-4">
-                              {allorder.addressInfo.address}
+                              {orderDoc.addressInfo?.address || "-"}
                             </td>
                             <td className="px-6 py-4">
-                              {allorder.addressInfo.pincode}
+                              {orderDoc.addressInfo?.pincode || "-"}
                             </td>
                             <td className="px-6 py-4">
-                              {allorder.addressInfo.phoneNumber}
+                              {orderDoc.addressInfo?.phoneNumber || "-"}
                             </td>
-                            <td className="px-6 py-4">{allorder.email}</td>
-                            <td className="px-6 py-4">{allorder.date}</td>
+                            <td className="px-6 py-4">{orderDoc.userEmail}</td>
+                            <td className="px-6 py-4">
+                              {orderDoc.createdAt
+                                ? new Date(
+                                    orderDoc.createdAt.seconds * 1000
+                                  ).toLocaleString()
+                                : "-"}
+                            </td>
                           </tr>
-                        </tbody>
-                      ))}
+                        ))}
+                      </tbody>
                     </table>
                   ))
                 )}
               </div>
-            </TabPanel> */}
+            </TabPanel>
 
+            {/* user  */}
             <TabPanel>
               <div className="relative overflow-x-auto mb-10">
                 <h1
