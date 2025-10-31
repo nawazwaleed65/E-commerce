@@ -6,43 +6,80 @@ import { auth, fireDB } from "../../Firebase/Firebase";
 import { Timestamp, addDoc, collection } from "firebase/firestore";
 import Loader from "../../components/Loader/Loader";
 import myContext from "../../Context/context";
+import Layout from "../../components/layout/layout";
+import { FaGoogle, FaApple } from "react-icons/fa";
 
 function Signup() {
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
-  const { name, email, password } = formData;
-
   const { loading, setLoading } = useContext(myContext);
   const navigate = useNavigate();
 
-  // ✅ Handle input change
+  // ✅ Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    gender: "",
+    email: "",
+    password: "",
+    role: "buyer", // default role
+  });
+  const [newsletter, setNewsletter] = useState(false);
+
+  const { name, email, password, gender, role } = formData;
+
+  // ✅ Handle input changes
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ✅ Signup Function
-  const handleSignup = async () => {
-    if (!name || !email || !password) {
+  // ✅ Handle Google Signup (optional)
+  const handleGoogle = () => {
+    toast.info("Google signup not implemented yet.");
+  };
+
+  // ✅ Handle form submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!name || !email || !password || !gender) {
       toast.error("All fields are required");
       return;
     }
 
     setLoading(true);
-
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // ✅ Create Firebase Auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
       const newUser = {
         name,
-        uid: userCredential.user.uid,
         email: userCredential.user.email,
-        time: Timestamp.now(),
+        uid: userCredential.user.uid,
+        gender,
+        role,
+        newsletter,
+        createdAt: Timestamp.now(),
       };
 
+      // ✅ Save user in Firestore
       await addDoc(collection(fireDB, "users"), newUser);
 
-      localStorage.setItem("user", JSON.stringify(userCredential.user));
+      // ✅ Save locally
+      await setDoc(doc(fireDB, "users", userCredential.user.uid), newUser);
+
+      localStorage.setItem("userRole", role);
 
       toast.success("Signup successful!");
-      setFormData({ name: "", email: "", password: "" });
+      setFormData({
+        name: "",
+        gender: "",
+        email: "",
+        password: "",
+        role: "buyer",
+      });
+
       navigate("/login");
     } catch (error) {
       console.error("Signup Error:", error.message);
@@ -53,59 +90,163 @@ function Signup() {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
-      {loading && <Loader />}
+    <Layout>
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        {loading && <Loader />}
 
-      <div className="bg-gray-800 px-10 py-10 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-center text-white text-2xl mb-6 font-bold">Signup</h1>
+        <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-md border border-gray-100">
+          {/* Header */}
+          <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+            Create an Account
+          </h2>
 
-        {/* Name Input */}
-        <input
-          type="text"
-          name="name"
-          value={name}
-          onChange={handleChange}
-          placeholder="Full Name"
-          className="bg-gray-600 mb-4 px-3 py-2 w-full rounded-lg text-white placeholder-gray-300 outline-none"
-        />
+          {/* Social Signup */}
+          <div className="space-y-3 mb-6">
+            <button
+              onClick={handleGoogle}
+              className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded py-3 font-medium text-gray-700 hover:bg-gray-50 transition"
+            >
+              <FaGoogle className="text-xl" /> Continue with Google
+            </button>
 
-        {/* Email Input */}
-        <input
-          type="email"
-          name="email"
-          value={email}
-          onChange={handleChange}
-          placeholder="Email Address"
-          className="bg-gray-600 mb-4 px-3 py-2 w-full rounded-lg text-white placeholder-gray-300 outline-none"
-        />
+            <button className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded py-3 font-medium text-gray-700 hover:bg-gray-50 transition">
+              <FaApple className="text-xl" /> Continue with Apple
+            </button>
+          </div>
 
-        {/* Password Input */}
-        <input
-          type="password"
-          name="password"
-          value={password}
-          onChange={handleChange}
-          placeholder="Password"
-          className="bg-gray-600 mb-6 px-3 py-2 w-full rounded-lg text-white placeholder-gray-300 outline-none"
-        />
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-gray-300"></div>
+            <span className="mx-3 text-gray-500 text-sm">OR</span>
+            <div className="flex-grow border-t border-gray-300"></div>
+          </div>
 
-        {/* Signup Button */}
-        <button
-          onClick={handleSignup}
-          className="bg-red-500 hover:bg-red-600 w-full text-white font-bold py-2 rounded-lg transition-colors duration-300"
-        >
-          Sign Up
-        </button>
+          {/* Signup Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Name */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+            </div>
 
-        {/* Login Link */}
-        <p className="text-center text-gray-300 mt-4 text-sm">
-          Already have an account?{" "}
-          <Link to="/login" className="text-red-400 hover:underline font-semibold">
-            Login
-          </Link>
-        </p>
+            {/* Gender */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Gender
+              </label>
+              <select
+                name="gender"
+                value={gender}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 p-3 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-700"
+              >
+                <option value="">Select Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+
+            {/* Role (Buyer/Admin) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Account Type
+              </label>
+              <select
+                name="role"
+                value={role}
+                onChange={handleChange}
+                className="w-full border border-gray-300 p-3 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-700"
+              >
+                <option value="buyer">Buyer</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Email Address
+              </label>
+              <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+            </div>
+
+            {/* Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={handleChange}
+                required
+                className="w-full border border-gray-300 p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-700"
+              />
+            </div>
+
+            {/* Newsletter */}
+            <div className="flex items-start space-x-2">
+              <input
+                type="checkbox"
+                id="updates"
+                checked={newsletter}
+                onChange={() => setNewsletter(!newsletter)}
+                className="mt-1"
+              />
+              <label htmlFor="updates" className="text-sm text-gray-600">
+                Keep me updated by email with the latest news and rewards.
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className={`w-full mb-3 py-3 rounded font-medium text-white transition ${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-gray-800 hover:bg-gray-900"
+              }`}
+            >
+              {loading ? "Creating account..." : "Create Account"}
+            </button>
+          </form>
+
+          {/* Footer */}
+          <p className="text-center text-gray-600 text-sm mt-6">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-gray-900 font-semibold hover:underline"
+            >
+              Login
+            </Link>
+          </p>
+        </div>
       </div>
-    </div>
+    </Layout>
   );
 }
 

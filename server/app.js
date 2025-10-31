@@ -53,7 +53,9 @@ app.post("/api/create-checkout-session", async (req, res) => {
         product_data: {
           name: item.title || "Untitled Product",
           images: [
-            item.imageUrl || item.image || "https://via.placeholder.com/150", // ✅ default placeholder
+            item.imageUrl.startsWith("http")
+              ? item.imageUrl
+              : "https://via.placeholder.com/150", // fallback
           ],
         },
         unit_amount: Math.round(item.price * 100),
@@ -89,8 +91,11 @@ app.post("/api/save-order", async (req, res) => {
       title: item.title || "Untitled Product",
       price: item.price || 0,
       quantity: item.quantity || 1,
-      imageUrl:
-        item.imageUrl || item.image || "https://via.placeholder.com/150",
+      images: [
+        item.imageUrl.startsWith("http")
+          ? item.imageUrl
+          : "https://via.placeholder.com/150", // fallback
+      ],
       description: item.description || "",
     }));
 
@@ -101,7 +106,7 @@ app.post("/api/save-order", async (req, res) => {
 
     const orderData = {
       userEmail: user.email,
-      name: user.name || "Guest",
+      userName: user?.displayName,
       products: sanitizedProducts,
       total,
       paymentStatus: "paid",

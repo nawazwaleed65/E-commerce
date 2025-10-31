@@ -58,7 +58,7 @@ function Cart() {
             products: cartItems,
             user: {
               email: user?.email || "guest@example.com",
-              name: user?.name || "Guest", // ✅ send name to backend
+              name: user?.name || "Guest",
             },
           }),
         }

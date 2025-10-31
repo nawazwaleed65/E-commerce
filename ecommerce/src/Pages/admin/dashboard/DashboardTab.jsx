@@ -25,7 +25,7 @@ function DashboardTab() {
     window.location.href = "/addProduct";
   };
 
-  const [orders, setOrders] = useState([]); // ✅ define state
+  const [orders, setOrders] = useState([]);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -234,7 +234,7 @@ function DashboardTab() {
                                     <div>
                                       <Link
                                         to={"/updateProduct"}
-                                        onClick={edithandle(item)}
+                                        onClick={() => edithandle(item)}
                                       >
                                         <svg
                                           xmlns="http://www.w3.org/2000/svg"

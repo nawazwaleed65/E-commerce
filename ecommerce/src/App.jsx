@@ -15,23 +15,89 @@ import Success from "./Pages/order/Success";
 import AllProduct from "./Pages/allProduct/allProduct";
 import CheckoutSuccess from "./Pages/order/CheckoutSuccess";
 
+function ProtectedRoute({ children, allowedRoles }) {
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userRole = user?.role;
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(userRole)) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+}
+
 function App() {
   return (
     <MyState>
       <Routes>
-        <Route path="/checkout-success" element={<CheckoutSuccess />} />
-        <Route path="/success" element={<Success />} />
-        <Route path="allProducts" element={<AllProduct />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/order" element={<Order />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        {/* 🛒 Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/checkout-success" element={<CheckoutSuccess />} />
+        <Route path="/success" element={<Success />} />
+        <Route path="/allProducts" element={<AllProduct />} />
         <Route path="/productInfo/:id" element={<ProductInfo />} />
-        <Route path="/addProduct" element={<AddProduct />} />
-        <Route path="/updateProduct" element={<UpdateProduct />} />
+
+        {/* 🏠 Buyer Routes (buyer only) */}
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute allowedRoles={["buyer", "admin"]}>
+              <Home />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/order"
+          element={
+            <ProtectedRoute allowedRoles={["buyer"]}>
+              <Order />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute allowedRoles={["buyer"]}>
+              <Cart />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ⚙️ Admin Routes (admin only) */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/addProduct"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <AddProduct />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/updateProduct"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <UpdateProduct />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* ❌ Fallback */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
       <ToastContainer />
     </MyState>
   );

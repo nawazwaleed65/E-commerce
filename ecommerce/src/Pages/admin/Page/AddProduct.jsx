@@ -40,7 +40,7 @@ function AddProduct() {
           <div>
             <input
               type="text"
-              name="imageurl"
+              name="imageUrl"
               onChange={(e) =>
                 setProducts({ ...products, imageUrl: e.target.value })
               }

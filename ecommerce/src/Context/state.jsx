@@ -34,9 +34,6 @@ function MyState(props) {
     }
   };
 
-  // --------------------------
-  // ✅ Add Product State
-  // --------------------------
   const [products, setProducts] = useState({
     title: "",
     price: "",
@@ -51,9 +48,6 @@ function MyState(props) {
     }),
   });
 
-  // --------------------------
-  // ✅ Add Product
-  // --------------------------
   const addProduct = async () => {
     if (
       !products.title ||
@@ -80,9 +74,6 @@ function MyState(props) {
     }
   };
 
-  // --------------------------
-  // ✅ Fetch Products
-  // --------------------------
   const [product, setProduct] = useState([]);
 
   const getProductData = async () => {
@@ -108,9 +99,6 @@ function MyState(props) {
     getProductData();
   }, []);
 
-  // --------------------------
-  // ✅ Edit + Update Product
-  // --------------------------
   const edithandle = (item) => {
     setProducts(item);
   };
@@ -130,9 +118,6 @@ function MyState(props) {
     }
   };
 
-  // --------------------------
-  // ✅ Delete Product
-  // --------------------------
   const deleteProduct = async (item) => {
     setLoading(true);
     try {
