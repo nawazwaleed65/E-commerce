@@ -3,7 +3,7 @@ import myContext from "../../../Context/context";
 
 function AddProduct() {
   const context = useContext(myContext);
-  const { products, setProducts, addProduct } = context;
+  const { product, setProduct, addProduct } = context;
   return (
     <div>
       <div className=" flex justify-center items-center h-screen">
@@ -17,9 +17,9 @@ function AddProduct() {
             <input
               type="text"
               onChange={(e) =>
-                setProducts({ ...products, title: e.target.value })
+                setProduct({ ...product, title: e.target.value })
               }
-              value={products.title}
+              value={product.title}
               name="title"
               className=" bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
               placeholder="Product title"
@@ -30,9 +30,9 @@ function AddProduct() {
               type="text"
               name="price"
               onChange={(e) =>
-                setProducts({ ...products, price: e.target.value })
+                setProduct({ ...product, price: e.target.value })
               }
-              value={products.price}
+              value={product.price}
               className=" bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
               placeholder="Product price"
             />
@@ -42,9 +42,9 @@ function AddProduct() {
               type="text"
               name="imageUrl"
               onChange={(e) =>
-                setProducts({ ...products, imageUrl: e.target.value })
+                setProduct({ ...product, imageUrl: e.target.value })
               }
-              value={products.imageUrl}
+              value={product.imageUrl}
               className=" bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
               placeholder="Product imageUrl"
             />
@@ -54,9 +54,9 @@ function AddProduct() {
               type="text"
               name="category"
               onChange={(e) =>
-                setProducts({ ...products, category: e.target.value })
+                setProduct({ ...product, category: e.target.value })
               }
-              value={products.category}
+              value={product.category}
               className=" bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
               placeholder="Product category"
             />
@@ -67,9 +67,9 @@ function AddProduct() {
               rows="10"
               name="description"
               onChange={(e) =>
-                setProducts({ ...products, description: e.target.value })
+                setProduct({ ...product, description: e.target.value })
               }
-              value={products.description}
+              value={product.description}
               className="bg-gray-600 mb-4 px-2 py-2 w-full lg:w-[20em] rounded-lg text-white placeholder:text-gray-200 outline-none"
               placeholder="Product description"
             />

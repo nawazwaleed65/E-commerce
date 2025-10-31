@@ -19,22 +19,23 @@ function MyState(props) {
   const [mode, setMode] = useState("light");
   const [loading, setLoading] = useState(false);
 
-  // --------------------------
-  // ✅ Dark / Light Mode Toggle
-  // --------------------------
+  // 🌗 Dark / Light Mode Toggle
   const toggleMode = () => {
     if (mode === "dark") {
       setMode("light");
-      document.body.style.backgroundColor = "rgb(255, 255, 255)";
+      document.body.style.backgroundColor = "white";
       document.body.style.color = "black";
     } else {
       setMode("dark");
-      document.body.style.backgroundColor = "rgb(0, 0, 0)";
+      document.body.style.backgroundColor = "black";
       document.body.style.color = "white";
     }
   };
 
-  const [products, setProducts] = useState({
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
+  // 🧾 Single Product (Form)
+  const [product, setProduct] = useState({
     title: "",
     price: "",
     imageUrl: "",
@@ -48,23 +49,37 @@ function MyState(props) {
     }),
   });
 
+  const [productList, setProductList] = useState([]);
+
   const addProduct = async () => {
     if (
-      !products.title ||
-      !products.price ||
-      !products.imageUrl ||
-      !products.category ||
-      !products.description
+      !product.title ||
+      !product.price ||
+      !product.imageUrl ||
+      !product.category ||
+      !product.description
     ) {
       return toast.error("All fields are required");
+    }
+
+    if (!currentUser) {
+      return toast.error("User not logged in");
     }
 
     setLoading(true);
     try {
       const productRef = collection(fireDB, "products");
-      await addDoc(productRef, products);
+      const newProduct = {
+        ...product,
+        sellerEmail: currentUser.email,
+        sellerUID: currentUser.uid,
+        role: currentUser.role || "admin",
+      };
+
+      await addDoc(productRef, newProduct);
       toast.success("Product added successfully");
-      setTimeout(() => (window.location.href = "/dashboard"), 800);
+
+      setTimeout(() => (window.location.href = "/productDetail"), 800);
       getProductData();
     } catch (error) {
       console.log(error);
@@ -74,18 +89,17 @@ function MyState(props) {
     }
   };
 
-  const [product, setProduct] = useState([]);
-
+  // 📦 Get All Products
   const getProductData = async () => {
     setLoading(true);
     try {
       const q = query(collection(fireDB, "products"), orderBy("time"));
       const data = onSnapshot(q, (QuerySnapshot) => {
-        let productArray = [];
+        let productsArray = [];
         QuerySnapshot.forEach((doc) => {
-          productArray.push({ ...doc.data(), id: doc.id });
+          productsArray.push({ ...doc.data(), id: doc.id });
         });
-        setProduct(productArray);
+        setProductList(productsArray);
         setLoading(false);
       });
       return () => data;
@@ -99,16 +113,27 @@ function MyState(props) {
     getProductData();
   }, []);
 
-  const edithandle = (item) => {
-    setProducts(item);
+  const [editProduct, setEditProduct] = useState(null);
+
+  const editHandle = (item) => {
+    setEditProduct(item);
+    localStorage.setItem("editProduct", JSON.stringify(item));
   };
 
   const updateProduct = async () => {
+    if (!product.id) return toast.error("No product selected");
+
     setLoading(true);
     try {
-      await setDoc(doc(fireDB, "products", products.id), products);
+      await setDoc(doc(fireDB, "products", product.id), {
+        ...product,
+        sellerEmail: currentUser.email,
+        sellerUID: currentUser.uid,
+        role: currentUser.role || "admin",
+      });
+
       toast.success("Product updated successfully");
-      setTimeout(() => (window.location.href = "/dashboard"), 800);
+      setTimeout(() => (window.location.href = "/productDetail"), 800);
       getProductData();
     } catch (error) {
       console.log(error);
@@ -118,6 +143,7 @@ function MyState(props) {
     }
   };
 
+  // ❌ Delete Product
   const deleteProduct = async (item) => {
     setLoading(true);
     try {
@@ -132,6 +158,7 @@ function MyState(props) {
     }
   };
 
+  // 🧾 Orders
   const [order, setOrder] = useState([]);
 
   const getOrderData = async () => {
@@ -156,6 +183,7 @@ function MyState(props) {
     getOrderData();
   }, []);
 
+  // 👤 Users
   const [user, setUser] = useState([]);
 
   const getUserData = async () => {
@@ -165,23 +193,21 @@ function MyState(props) {
       const usersArray = [];
       result.forEach((doc) => {
         usersArray.push(doc.data());
-        setLoading(false);
       });
       setUser(usersArray);
       console.log(usersArray);
-      setLoading(false);
     } catch (error) {
       console.log(error);
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    getProductData();
-    getOrderData();
     getUserData();
   }, []);
 
+  // 🔍 Filters
   const [searchkey, setSearchkey] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterPrice, setFilterPrice] = useState("");
@@ -193,11 +219,12 @@ function MyState(props) {
         toggleMode,
         loading,
         setLoading,
-        products,
         product,
+        setProduct,
+        productList,
         addProduct,
-        edithandle,
-        setProducts,
+        editHandle,
+        editProduct,
         deleteProduct,
         updateProduct,
         order,

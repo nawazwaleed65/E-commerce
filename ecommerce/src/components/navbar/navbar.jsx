@@ -17,6 +17,7 @@ function Navbar() {
 
   const cartItems = useSelector((state) => state.cart);
 
+  // ✅ Load user info from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     setUser(storedUser ? JSON.parse(storedUser) : null);
@@ -28,8 +29,12 @@ function Navbar() {
     setUser(null);
     navigate("/");
   };
+
+  const isAdmin = user?.role === "admin";
+
   return (
     <div className="bg-white sticky top-0 z-50">
+      {/* ====== MOBILE MENU ====== */}
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-40 lg:hidden" onClose={setOpen}>
           <Transition.Child
@@ -57,22 +62,22 @@ function Navbar() {
               <Dialog.Panel
                 className="relative flex w-full max-w-xs flex-col overflow-y-auto bg-white pb-12 shadow-xl"
                 style={{
-                  backgroundColor: mode === "dark" ? "rgb(40, 44, 52)" : "",
+                  backgroundColor: mode === "dark" ? "#282c34" : "",
                   color: mode === "dark" ? "white" : "",
                 }}
               >
                 <div className="flex px-4 pb-2 pt-28">
                   <button
                     type="button"
-                    className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
                     onClick={() => setOpen(false)}
+                    className="-m-2 inline-flex items-center justify-center rounded-md p-2 text-gray-400"
                   >
-                    <span className="sr-only">Close menu</span>
                     <RxCross2 />
                   </button>
                 </div>
 
                 <div className="space-y-6 border-t border-gray-200 px-4 py-6">
+                  {/* Common link */}
                   <Link
                     to="/allProducts"
                     className="text-sm font-medium"
@@ -81,25 +86,54 @@ function Navbar() {
                     All Products
                   </Link>
 
+                  {/* Logged in users */}
                   {user ? (
                     <>
-                      <Link
-                        to="/order"
-                        className="block p-2 font-medium"
-                        onClick={() => setOpen(false)}
-                      >
-                        Orders
-                      </Link>
+                      {/* 🧍 Buyer view */}
+                      {!isAdmin && (
+                        <>
+                          <Link
+                            to="/order"
+                            className="block text-sm font-medium"
+                            onClick={() => setOpen(false)}
+                          >
+                            Orders
+                          </Link>
+                          <Link
+                            to="/cart"
+                            className="block text-sm font-medium"
+                            onClick={() => setOpen(false)}
+                          >
+                            Cart ({cartItems.length})
+                          </Link>
+                        </>
+                      )}
 
-                      {/* ✅ Show Admin link only if user.role === 'admin' */}
-                      {user.role === "admin" && (
-                        <Link
-                          to="/dashboard"
-                          className="block p-2 font-medium"
-                          onClick={() => setOpen(false)}
-                        >
-                          Admin Dashboard
-                        </Link>
+                      {/* 🧑‍💼 Admin view */}
+                      {isAdmin && (
+                        <>
+                          <Link
+                            to="/dashboard"
+                            className="block text-sm font-medium"
+                            onClick={() => setOpen(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                          <Link
+                            to="/dashboard"
+                            className="block text-sm font-medium"
+                            onClick={() => setOpen(false)}
+                          >
+                            View Orders
+                          </Link>
+                          <Link
+                            to="/addProduct"
+                            className="block text-sm font-medium"
+                            onClick={() => setOpen(false)}
+                          >
+                            Add Product
+                          </Link>
+                        </>
                       )}
 
                       <button
@@ -107,34 +141,21 @@ function Navbar() {
                           handleLogout();
                           setOpen(false);
                         }}
-                        className="block p-2 font-medium cursor-pointer"
+                        className="block text-sm font-medium cursor-pointer"
                       >
                         Logout
                       </button>
                     </>
                   ) : (
+                    // 🚪 Not logged in
                     <Link
                       to="/login"
-                      className="block p-2 font-medium cursor-pointer"
+                      className="block text-sm font-medium cursor-pointer"
                       onClick={() => setOpen(false)}
                     >
                       Login
                     </Link>
                   )}
-                </div>
-
-                {/* ===== COUNTRY SECTION ===== */}
-                <div className="border-t border-gray-200 px-4 py-6">
-                  <div className="flex items-center">
-                    <img
-                      src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg"
-                      alt="Pakistan Flag"
-                      className="block h-auto w-5 flex-shrink-0"
-                    />
-                    <span className="ml-3 block text-base font-medium">
-                      Pakistan
-                    </span>
-                  </div>
                 </div>
               </Dialog.Panel>
             </Transition.Child>
@@ -142,12 +163,12 @@ function Navbar() {
         </Dialog>
       </Transition.Root>
 
-      {/* ===== DESKTOP NAVBAR ===== */}
+      {/* ====== DESKTOP NAVBAR ====== */}
       <header className="relative bg-white">
         <p
           className="flex h-10 items-center justify-center bg-pink-600 px-4 text-sm font-medium text-white sm:px-6 lg:px-8"
           style={{
-            backgroundColor: mode === "dark" ? "rgb(62 64 66)" : "",
+            backgroundColor: mode === "dark" ? "#3e4042" : "",
             color: mode === "dark" ? "white" : "",
           }}
         >
@@ -156,136 +177,57 @@ function Navbar() {
 
         <nav
           aria-label="Top"
-          className="bg-gray-100 px-4 sm:px-6 lg:px-8 shadow-xl"
+          className="bg-gray-100 px-4 sm:px-6 lg:px-8 shadow-md"
           style={{
             backgroundColor: mode === "dark" ? "#282c34" : "",
             color: mode === "dark" ? "white" : "",
           }}
         >
-          <div className="flex h-16 items-center">
-            <button
-              type="button"
-              className="rounded-md bg-white p-2 text-gray-400 lg:hidden"
-              onClick={() => setOpen(true)}
-              style={{
-                backgroundColor: mode === "dark" ? "rgb(80 82 87)" : "",
-                color: mode === "dark" ? "white" : "",
-              }}
-            >
-              <span className="sr-only">Open menu</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth="1.5"
-                stroke="currentColor"
-                className="w-6 h-6"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
-            </button>
+          <div className="flex h-16 items-center justify-between">
+            <Link to="/" className="text-2xl font-bold">
+              E-Bharat
+            </Link>
 
-            {/* ===== LOGO ===== */}
-            <div className="ml-4 flex lg:ml-0">
-              <Link to="/" className="flex">
-                <h1
-                  className="text-2xl font-bold px-2 py-1 rounded"
-                  style={{ color: mode === "dark" ? "white" : "" }}
-                >
-                  E-Bharat
-                </h1>
-              </Link>
+            <div className="hidden lg:flex lg:space-x-6">
+              {!user && (
+                <>
+                  <Link to="/allProducts">All Products</Link>
+                  <Link to="/login">Login</Link>
+                </>
+              )}
+
+              {user && !isAdmin && (
+                <>
+                  <Link to="/allProducts">All Products</Link>
+                  <Link to="/order">Orders</Link>
+                  <Link to="/cart">Cart ({cartItems.length})</Link>
+                  <button onClick={handleLogout}>Logout</button>
+                </>
+              )}
+
+              {isAdmin && (
+                <>
+                  <Link to="/dashboard">Admin Dashboard</Link>
+                  <Link to="/ProductDetail">Product Detail</Link>
+                  <Link to="/viewOrder">View Orders</Link>
+                  <Link to="/addProduct">Add Product</Link>
+                  <button onClick={handleLogout}>Logout</button>
+                </>
+              )}
             </div>
 
-            <div className="ml-auto flex items-center">
-              {/* ===== NAV LINKS ===== */}
-              <div className="hidden lg:flex lg:space-x-6">
-                <Link
-                  to="/allProducts"
-                  className="text-sm font-medium"
-                  style={{ color: mode === "dark" ? "white" : "" }}
-                >
-                  All Products
-                </Link>
-
-                {user ? (
-                  <>
-                    <Link
-                      to="/order"
-                      className="text-sm font-medium"
-                      style={{ color: mode === "dark" ? "white" : "" }}
-                    >
-                      Orders
-                    </Link>
-
-                    {user.role === "admin" && (
-                      <Link
-                        to="/dashboard"
-                        className="text-sm font-medium"
-                        style={{ color: mode === "dark" ? "white" : "" }}
-                      >
-                        Admin
-                      </Link>
-                    )}
-
-                    <button
-                      onClick={handleLogout}
-                      className="text-sm font-medium cursor-pointer"
-                      style={{ color: mode === "dark" ? "white" : "" }}
-                    >
-                      Logout
-                    </button>
-                  </>
+            <div className="flex items-center gap-4">
+              <button onClick={toggleMode}>
+                {mode === "light" ? (
+                  <FiSun size={25} />
                 ) : (
-                  <Link
-                    to="/login"
-                    className="text-sm font-medium cursor-pointer"
-                    style={{ color: mode === "dark" ? "white" : "" }}
-                  >
-                    Login
-                  </Link>
+                  <BsFillCloudSunFill size={25} />
                 )}
-              </div>
+              </button>
 
-              {/* ===== COUNTRY FLAG ===== */}
-              <div className="hidden lg:ml-8 lg:flex">
-                <div className="flex items-center">
-                  <img
-                    src="https://upload.wikimedia.org/wikipedia/commons/3/32/Flag_of_Pakistan.svg"
-                    alt="Pakistan Flag"
-                    className="block h-auto w-5 flex-shrink-0"
-                  />
-                  <span
-                    className="ml-3 block text-sm font-medium"
-                    style={{ color: mode === "dark" ? "white" : "" }}
-                  >
-                    Pakistan
-                  </span>
-                </div>
-              </div>
-
-              {/* ===== DARK MODE TOGGLE ===== */}
-              <div className="flex lg:ml-6">
-                <button onClick={toggleMode}>
-                  {mode === "light" ? (
-                    <FiSun size={30} />
-                  ) : (
-                    <BsFillCloudSunFill size={30} />
-                  )}
-                </button>
-              </div>
-
-              {/* ===== CART ===== */}
-              <div className="ml-4 flow-root lg:ml-6">
-                <Link
-                  to="/cart"
-                  className="group -m-2 flex items-center p-2"
-                  style={{ color: mode === "dark" ? "white" : "" }}
-                >
+              {/* Cart Icon (Buyers only) */}
+              {user && !isAdmin && (
+                <Link to="/cart" className="flex items-center gap-1">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -300,12 +242,9 @@ function Navbar() {
                       d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
                     />
                   </svg>
-
-                  <span className="ml-2 text-sm font-medium">
-                    {cartItems.length}
-                  </span>
+                  <span>{cartItems.length}</span>
                 </Link>
-              </div>
+              )}
             </div>
           </div>
         </nav>

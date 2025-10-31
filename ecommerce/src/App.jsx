@@ -14,6 +14,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Success from "./Pages/order/Success";
 import AllProduct from "./Pages/allProduct/allProduct";
 import CheckoutSuccess from "./Pages/order/CheckoutSuccess";
+import ViewOrder from "./Pages/Seller/ViewOrder";
+import ProductDetail from "./Pages/Seller/ProductDetails";
 
 function ProtectedRoute({ children, allowedRoles }) {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -42,7 +44,6 @@ function App() {
         <Route path="/allProducts" element={<AllProduct />} />
         <Route path="/productInfo/:id" element={<ProductInfo />} />
 
-        {/* 🏠 Buyer Routes (buyer only) */}
         <Route
           path="/"
           element={
@@ -74,6 +75,24 @@ function App() {
           element={
             <ProtectedRoute allowedRoles={["admin"]}>
               <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/productDetail"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ProductDetail />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/viewOrder"
+          element={
+            <ProtectedRoute allowedRoles={["admin"]}>
+              <ViewOrder />
             </ProtectedRoute>
           }
         />

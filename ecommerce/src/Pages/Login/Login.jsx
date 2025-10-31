@@ -45,11 +45,9 @@ function Login() {
 
       const userData = querySnapshot.docs[0].data();
 
-      // ✅ Step 3: Save full user info locally
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("userRole", userData.role);
 
-      // ✅ Step 4: Role-based redirection
       if (userData.role === "admin") {
         toast.success("Welcome, Admin!");
         navigate("/admin"); // admin page
@@ -115,14 +113,12 @@ function Login() {
               </button>
             </div>
 
-            {/* Divider */}
             <div className="flex items-center my-6">
               <div className="flex-grow border-t border-gray-300"></div>
               <span className="mx-3 text-gray-500 text-sm">OR</span>
               <div className="flex-grow border-t border-gray-300"></div>
             </div>
 
-            {/* ✅ Login Form */}
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-medium mb-2">

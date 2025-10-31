@@ -158,7 +158,6 @@ function Signup() {
               </select>
             </div>
 
-            {/* Role (Buyer/Admin) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Account Type
@@ -170,7 +169,7 @@ function Signup() {
                 className="w-full border border-gray-300 p-3 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-gray-700"
               >
                 <option value="buyer">Buyer</option>
-                <option value="admin">Admin</option>
+                <option value="admin">Seller</option>
               </select>
             </div>
 
